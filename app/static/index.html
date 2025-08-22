@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokenomics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .panda-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/static/panda.png');
+            background-size: cover;
+            background-position: center 20%;
+            background-repeat: no-repeat;
+            z-index: -1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .header-section {
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header-section h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.9);
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .header-section .narrative {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.9);
+            opacity: 1;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .header-section .prophecy {
+            font-size: 1.2rem;
+            font-style: italic;
+            font-weight: bold;
+            margin-top: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 1px 1px 2px rgba(0,0,0,0.9);
+            color: #4ade80;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.5rem;
+            margin: 50px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .tokenomics-section {
+            padding: 40px 20px;
+            min-height: 40vh;
+        }
+
+        .tokenomics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .tokenomics-card {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tokenomics-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .tokenomics-icon {
+            width: 60px;
+            height: 60px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 2rem;
+        }
+
+        .tokenomics-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 1px 1px 2px rgba(0, 0, 0, 0.9);
+        }
+
+        .tokenomics-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 1px 1px 2px rgba(0, 0, 0, 0.9);
+        }
+
+        .tokenomics-label {
+            color: #ffffff;
+            line-height: 1.4;
+            font-size: 0.9rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 1px 1px 2px rgba(0, 0, 0, 0.9);
+            font-weight: 500;
+        }
+
+        .positive {
+            color: #4ade80;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 1px 1px 2px rgba(0, 0, 0, 0.9);
+            font-weight: bold;
+        }
+
+        .negative {
+            color: #f87171;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 1px 1px 2px rgba(0, 0, 0, 0.9);
+            font-weight: bold;
+        }
+
+        .tokenomics-details {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .tokenomics-details.show {
+            display: block;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .detail-value {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .card-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .price-change {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .positive {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+
+        .negative {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .refresh-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .social-links {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+        }
+
+        .social-links a {
+            display: inline-block;
+            margin: 0 15px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            font-weight: bold;
+        }
+
+        .social-links a:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header-section h1 {
+                font-size: 2rem;
+            }
+            
+            .header-section .narrative {
+                font-size: 1rem;
+                padding: 0 10px;
+            }
+            
+            .header-section .prophecy {
+                font-size: 1.1rem;
+                padding: 0 10px;
+            }
+            
+            .tokenomics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .tokenomics-card {
+                margin: 0 5px;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .tokenomics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .tokenomics-card {
+                margin: 0 5px;
+                padding: 12px;
+            }
+            
+            .tokenomics-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+            
+            .tokenomics-title {
+                font-size: 1rem;
+            }
+            
+            .tokenomics-value {
+                font-size: 1.2rem;
+            }
+            
+            .tokenomics-label {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="panda-background"></div>
+    <div class="container">
+                 <div class="header-section">
+             <h1>🌐 The Legend of PandaCoin ($PANDA) 🐼💎</h1>
+             <div class="narrative">
+                 In the ancient bamboo forests of the digital realm, a lone panda awakened—not of fur and flesh, but of code and cryptography. While the world was distracted chasing apes, dogs, and frogs, this panda quietly meditated on-chain, watching block by block, waiting for the perfect moment.
+                 <br><br>
+                 🔥 Then it happened: PANDA broke free from the bamboo firewall, armed with diamond paws and laser eyes, ready to flip the crypto jungle upside down. Unlike the chaos-driven coins before it, PANDA is calm but unstoppable—slow in appearance, yet lightning-fast in conviction.
+                 <br><br>
+                 Every time the market dips, PANDA doesn't panic. It just munches bamboo (and your weak hands) and keeps climbing higher. In a space filled with hype and noise, PANDA is zen, steady, and inevitable.
+             </div>
+             <div class="prophecy">
+                 💡 The prophecy says:<br>
+                 "When apes get rugged, and dogs chase their tails… the panda will rise, bringing balance to the blockchain."
+             </div>
+         </div>
+
+        <div class="tokenomics-section">
+            <div class="tokenomics-grid">
+                <div class="tokenomics-card">
+                    <div class="tokenomics-icon">📋</div>
+                    <div class="tokenomics-title">Token Info</div>
+                    <div class="tokenomics-value" id="token-name">-</div>
+                    <div class="tokenomics-label" id="token-symbol">Token Symbol</div>
+                </div>
+
+                <div class="tokenomics-card">
+                    <div class="tokenomics-icon">💰</div>
+                    <div class="tokenomics-title">Price</div>
+                    <div class="tokenomics-value" id="price">$0.00</div>
+                    <div class="tokenomics-label">Current Price (USD)</div>
+                </div>
+
+                <div class="tokenomics-card">
+                    <div class="tokenomics-icon">📈</div>
+                    <div class="tokenomics-title">24h Change</div>
+                    <div class="tokenomics-value" id="price-change-24h">-</div>
+                    <div class="tokenomics-label">Price Change</div>
+                </div>
+
+                <div class="tokenomics-card">
+                    <div class="tokenomics-icon">📊</div>
+                    <div class="tokenomics-title">Market Cap</div>
+                    <div class="tokenomics-value" id="market-cap">$0</div>
+                    <div class="tokenomics-label">Total Market Value</div>
+                </div>
+            </div>
+            
+            <div class="social-links">
+                <a href="https://x.com/yourchannel" target="_blank"> X</a>
+                <a href="https://t.me/yourchannel" target="_blank"> Telegram</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000/api/v1';
+
+        function formatNumber(num) {
+            if (num === null || num === undefined) return 'N/A';
+            
+            if (num >= 1e9) {
+                return '$' + (num / 1e9).toFixed(2) + 'B';
+            } else if (num >= 1e6) {
+                return '$' + (num / 1e6).toFixed(2) + 'M';
+            } else if (num >= 1e3) {
+                return '$' + (num / 1e3).toFixed(2) + 'K';
+            } else {
+                return '$' + num.toFixed(2);
+            }
+        }
+
+        function formatPrice(price) {
+            if (price === null || price === undefined) return '$0.00';
+            return '$' + parseFloat(price).toFixed(6);
+        }
+
+        function formatSupply(supply) {
+            if (supply === null || supply === undefined) return 'N/A';
+            
+            if (supply >= 1e9) {
+                return (supply / 1e9).toFixed(2) + 'B';
+            } else if (supply >= 1e6) {
+                return (supply / 1e6).toFixed(2) + 'M';
+            } else if (supply >= 1e3) {
+                return (supply / 1e3).toFixed(2) + 'K';
+            } else {
+                return supply.toString();
+            }
+        }
+
+        function updatePriceChange(change) {
+            const element = document.getElementById('price-change-24h');
+            if (change === null || change === undefined) {
+                element.textContent = 'N/A';
+                return;
+            }
+
+            const changeValue = parseFloat(change);
+            element.textContent = `${changeValue >= 0 ? '+' : ''}${changeValue.toFixed(2)}%`;
+            element.className = `tokenomics-value ${changeValue >= 0 ? 'positive' : 'negative'}`;
+        }
+
+        async function loadData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/tokenomics`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const data = result.data;
+
+                // Update UI with data
+                document.getElementById('token-name').textContent = data.token_name || 'N/A';
+                document.getElementById('token-symbol').textContent = data.token_symbol || 'N/A';
+                document.getElementById('price').textContent = formatPrice(data.price_usd);
+                document.getElementById('market-cap').textContent = formatNumber(data.market_cap);
+
+                updatePriceChange(data.price_change_percentage_24h);
+
+            } catch (err) {
+                console.error('Error fetching data:', err);
+                console.log('Failed to load data. Please check if the backend server is running on port 8000.');
+            }
+        }
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
