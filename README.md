@@ -1,7 +1,7 @@
-# Crypto Tokenomics Dashboard
+# A solana meme token web UI
 
 ## Overview
-A modern cryptocurrency tokenomics dashboard with a FastAPI backend and static HTML frontend. The backend aggregates token data from multiple APIs (Moralis and Birdeye) with Redis caching, while the frontend provides a beautiful, responsive UI for displaying tokenomics metrics with a panda-themed design.
+A modern solana meme token with a FastAPI backend and static HTML frontend. The backend aggregates token data from multiple APIs (Moralis and Birdeye) with Redis caching, while the frontend provides a beautiful, responsive UI for displaying tokenomics metrics with a panda-themed design.
 
 ## Features
 
